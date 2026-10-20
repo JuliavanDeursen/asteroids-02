@@ -9,6 +9,7 @@ data InfoToShow = ShowNothing
 nO_SECS_BETWEEN_CYCLES :: Float
 nO_SECS_BETWEEN_CYCLES = 5
 
+--gamestate data type, to hold information about the game during the game
 data GameState = GameState 
 { player :: Player, 
 asteroids :: [Asteroid], 
@@ -19,32 +20,48 @@ paused :: Bool,
 gameOver :: Bool 
 } 
 
+--player data type 
 data Player = Player 
 { playerPosition :: Point, 
 playerVelocity :: Velocity, 
 playerAngle :: Float, 
 playerSize :: Float 
 } 
+
+--asteroid data type
 data Asteroid = Asteroid 
 { asteroidPosition :: Point, 
 asteroidVelocity :: Velocity, 
 asteroidSize :: Float 
 } 
+
+--bullet data type
 data Bullet = Bullet 
 { bulletPosition :: Point, 
 bulletVelocity :: Velocity, 
 bulletTime :: Float  
 } 
+
+--explosion data type
 data Explosion = Explosion 
 { explosionPosition :: Point, 
-explosionTime     :: Float  
+explosionTime     :: Float  -- to keep track for the animation time
 } 
+
 type Point = (Float, Float) 
 type Velocity = (Float, Float)
 
-collision :: Point -> Point -> Float -> Bool 
-
-playerHit :: Player -> [Asteroid] -> Bool
-
 initialState :: GameState
-initialState = GameState ShowNothing 0
+initialState = GameState 
+{
+    player = Player (0,0) (0,0) 0 20, 
+asteroids = [], 
+bullets = [], 
+explosions = [], 
+score = 0, 
+paused = False,  
+gameOver = False 
+}
+
+playingState :: GameState
+--playingState = 
