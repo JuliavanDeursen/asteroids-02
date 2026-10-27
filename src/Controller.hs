@@ -23,11 +23,11 @@ updateGame dt gamestate =
 
         -- collisions
         playerDead = playerHit player' asteroids'
-        (as2, ex2, scoreGain) = bulletHits bullets' asteroids'
+        (as2, bullets2, ex2, scoreGain) = bulletHits bullets' asteroids'
     in
         gamestate { player     = player'
           , asteroids  = as2
-          , bullets    = bullets'
+          , bullets    = bullets2
           , explosions = explosions' ++ ex2
           , score      = score gamestate + scoreGain
           , gameOver   = playerDead
@@ -97,29 +97,40 @@ playerHit player asteroids =
             (asteroidPosition a)
             (playerSize player + asteroidSize a)
 
-bulletHits :: [Bullet] -> [Asteroid] -> ([Asteroid], [Explosion], Int)
+bulletHits :: [Bullet] -> [Asteroid] -> ([Asteroid], [Bullet], [Explosion], Int)
 bulletHits bullets asteroids =
-    let hit a = 
+    let isAsteroidHit a = 
             any (\b->
                 collision 
                   (bulletPosition b)
                   (asteroidPosition a)
                   (asteroidSize a + bulletSize b) 
                 ) bullets 
+        isBulletHit b = 
+            any (\a->
+                collision 
+                  (bulletPosition b)
+                  (asteroidPosition a)
+                  (asteroidSize a + bulletSize b) 
+                ) asteroids
 
-        remainingAsteroids = filter (not . hit) asteroids
-        hitAsteroids = filter hit asteroids
+-- Filter out asteroids that were hit by bullets
+        remainingAsteroids = filter (not . isAsteroidHit) asteroids
+        hitAsteroids = filter isAsteroidHit asteroids
+
+-- Filter out bullets that hit asteroids
+        remainingBullets = filter (not . isBulletHit) bullets
 
         newExplosions =
             map (\a -> Explosion
                 { explosionPosition = asteroidPosition a
-                , explosionTime = 1.2
+                , explosionTime = 0.0
                 }
                 ) hitAsteroids
 
         scoreGain = length hitAsteroids * 100
 
-    in (remainingAsteroids, newExplosions, scoreGain)
+    in (remainingAsteroids, remainingBullets, newExplosions, scoreGain)
 
 --this functions makes the asteroids
 --makeAsteroids :: GameState -> IO GameState

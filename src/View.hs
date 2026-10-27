@@ -5,7 +5,14 @@ module View where
 import Graphics.Gloss
 import Model
 
---view :: GameState -> IO Picture
+view :: GameState -> IO Picture
+view state
+    | paused state   = pictures [renderGame state, renderPaused]
+    | gameOver state = renderGameOver (score state)
+    | otherwise      = renderGame state
+
+
+
 --view = return . viewPure
 
 --viewPure :: GameState -> Picture
