@@ -8,7 +8,7 @@ import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Data.Bitmap
 
 main :: IO ()
-main = playIO (InWindow "Asteroids" (400, 400) (0, 0)) -- Or FullScreen
+main = playIO (InWindow "Asteroids" (800, 600) (0, 0)) -- Or FullScreen
               black            -- Background color
               60               -- Frames per second
               initialState     -- Initial state

@@ -2,7 +2,8 @@
 --   which represent the state of the game
 module Model where
 
-type Point = (Float, Float) 
+import Graphics.Gloss
+
 type Velocity = (Float, Float)
 
 --gamestate data type, to hold information about the game during the game    

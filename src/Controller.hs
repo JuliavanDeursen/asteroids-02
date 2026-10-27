@@ -8,6 +8,7 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 
+
 step :: Float -> GameState -> IO GameState
 step dt gamestate
     | paused gamestate   = return gamestate
@@ -38,8 +39,24 @@ updatePlayer :: Float -> Player -> Player
 updatePlayer dt p =
     let (x, y) = playerPosition p
         (vx, vy) = playerVelocity p
-        newPosition = (x + vx * dt, y + vy * dt)
-    in p { playerPosition = newPosition }
+
+        friction = 0.98 --Factor to slow down the player
+        newVx = vx * friction
+        newVy = vy * friction
+
+        newX = x + newVx * dt
+        newY = y - newVy * dt
+
+        wrapX = wrapCoord (-400) 400 newX
+        wrapY = wrapCoord (-300) 300 newY
+    in p { playerPosition = (wrapX, wrapY) }
+
+--Helpfunction to wrap coordinates around the screen edges
+wrapCoord :: Float -> Float -> Float -> Float
+wrapCoord min max val
+    | val < min = max
+    | val > max = min
+    | otherwise = val
 
 -- updates an asteroids position during time 
 updateAsteroid :: Float -> Asteroid -> Asteroid
@@ -77,7 +94,47 @@ input :: Event -> GameState -> IO GameState
 input e gstate = return (inputKey e gstate)
 
 inputKey :: Event -> GameState -> GameState
+
+--Pause the game when the user presses 'p'
+inputKey (EventKey (Char 'p') Down _ _) gstate =
+    gstate { paused = not (paused gstate) }
+
+--Left arrow key rotates the player to the left
+inputKey (EventKey (SpecialKey KeyLeft) Down _ _) gstate =
+    let p = player gstate
+    in gstate { player = p { playerAngle = playerAngle p - 15 } }
+
+--Right arrow key rotates the player to the right
+inputKey (EventKey (SpecialKey KeyRight) Down _ _) gstate =
+    let p = player gstate
+    in gstate { player = p { playerAngle = playerAngle p + 15 } }
+
+--Up arrow key accelerates the player in the direction they are facing
+inputKey (EventKey (SpecialKey KeyUp) Down _ _) gstate =
+    let p = player gstate
+        angleRad = playerAngle p * (pi / 180)
+        acceleration = 30
+        (vx, vy) = playerVelocity p
+        newVx = vx + acceleration * cos angleRad
+        newVy = vy + acceleration * sin angleRad
+    in gstate { player = p { playerVelocity = (newVx, newVy) } }
+
+--Spacebar key fires a bullet
+inputKey (EventKey (SpecialKey KeySpace) Down _ _) gstate =
+    let p = player gstate
+        angleRad = playerAngle p * (pi / 180)
+        bulletSpeed = 300
+        (px, py) = playerPosition p
+        bulletVx = bulletSpeed * cos angleRad
+        bulletVy = - (bulletSpeed * sin angleRad)
+        newBullet = Bullet { bulletPosition = playerPosition p
+                           , bulletVelocity = (bulletVx, bulletVy)
+                           , bulletTime = 0
+                           , bulletSize = 3 }
+    in gstate { bullets = newBullet : bullets gstate }
+
 inputKey _ gstate = gstate
+
 
 --calculates if theres an collision
 collision :: Point -> Point -> Float -> Bool 
