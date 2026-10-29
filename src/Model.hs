@@ -49,13 +49,19 @@ data Explosion = Explosion
 initialState :: GameState
 initialState = GameState 
     { player = Player {playerPosition = (0,0), playerVelocity = (0,0), playerAngle = 0, playerSize = 20}, 
-      asteroids = [], 
+      asteroids = [Asteroid {asteroidPosition = (100, 100), asteroidVelocity = (50, -30), asteroidSize = 30},
+                   Asteroid {asteroidPosition = (-150, 50), asteroidVelocity = (-30, -5), asteroidSize = 40},
+                   Asteroid {asteroidPosition = (200, -100), asteroidVelocity = (20, 50), asteroidSize = 25}], 
       bullets = [],   
       explosions = [], 
       score = 0, 
       paused = False,  
       gameOver = False 
     }
+--comments = 
+--the spawning of asteroids needs to be outside frame, so that they spawn outside the screen and move inwards
+--for now they are hardcoded but that needs to be changed to random spawning, size and velocity
+
 
 --playingState :: GameState
 --playingState = 

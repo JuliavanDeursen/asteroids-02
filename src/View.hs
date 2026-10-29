@@ -31,7 +31,11 @@ renderAsteroid :: Asteroid -> Picture
 renderAsteroid a = 
     uncurry translate (asteroidPosition a) $
     color green $
-    circleSolid (asteroidSize a)
+    let s = asteroidSize a / 25
+    in scale s s $ 
+       polygon [(20, 10), (10, 25), (-15, 20), (-25, 5), (-15, -20), (10, -25), (25, -10)]
+--change polygon!! this was just trying something, but doesnt look good
+
 
 renderBullet :: Bullet -> Picture
 renderBullet b = 

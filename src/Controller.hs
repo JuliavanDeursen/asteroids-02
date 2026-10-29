@@ -18,16 +18,17 @@ step dt gamestate
 updateGame :: Float -> GameState -> GameState
 updateGame dt gamestate =
     let player'  = updatePlayer dt (player gamestate)
-        asteroids' = map (updateAsteroid dt) (asteroids gamestate)
         bullets' = updateBullets dt (bullets gamestate)
         explosions' = updateExplosions dt (explosions gamestate)
 
+        (as2, bullets2, ex2, scoreGain) = bulletHits bullets' (asteroids gamestate)
+        asteroids' = map (updateAsteroid dt) as2
+
         -- collisions
         playerDead = playerHit player' asteroids'
-        (as2, bullets2, ex2, scoreGain) = bulletHits bullets' asteroids'
     in
         gamestate { player     = player'
-          , asteroids  = as2
+          , asteroids  = asteroids'
           , bullets    = bullets2
           , explosions = explosions' ++ ex2
           , score      = score gamestate + scoreGain
@@ -40,7 +41,7 @@ updatePlayer dt p =
     let (x, y) = playerPosition p
         (vx, vy) = playerVelocity p
 
-        friction = 0.98 --Factor to slow down the player
+        friction = 0.99 --Factor to slow down the player
         newVx = vx * friction
         newVy = vy * friction
 
@@ -63,8 +64,13 @@ updateAsteroid :: Float -> Asteroid -> Asteroid
 updateAsteroid dt a =
     let (x, y) = asteroidPosition a
         (vx, vy) = asteroidVelocity a
-        newPosition = (x + vx * dt, y + vy * dt)
-    in a { asteroidPosition = newPosition }
+
+        newX = x + vx * dt
+        newY = y + vy * dt
+
+        wrapX = wrapCoord (-400) 400 newX
+        wrapY = wrapCoord (-300) 300 newY
+    in a { asteroidPosition = (wrapX, wrapY) }
 
 --map update bullet so the entire list get updated during time
 updateBullets :: Float -> [Bullet] -> [Bullet]
@@ -113,7 +119,7 @@ inputKey (EventKey (SpecialKey KeyRight) Down _ _) gstate =
 inputKey (EventKey (SpecialKey KeyUp) Down _ _) gstate =
     let p = player gstate
         angleRad = playerAngle p * (pi / 180)
-        acceleration = 30
+        acceleration = 50
         (vx, vy) = playerVelocity p
         newVx = vx + acceleration * cos angleRad
         newVy = vy + acceleration * sin angleRad
