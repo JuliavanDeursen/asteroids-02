@@ -33,9 +33,8 @@ renderAsteroid a =
     color green $
     let s = asteroidSize a / 25
     in scale s s $ 
-       polygon [(20, 10), (10, 25), (-15, 20), (-25, 5), (-15, -20), (10, -25), (25, -10)]
---change polygon!! this was just trying something, but doesnt look good
-
+       polygon [(-18, 22), (12, 28), (26, 10), (22, -18), (5, -28), (-15, -24), (-28, -5), (-22, 14)]
+--a bit better now, change if you want
 
 renderBullet :: Bullet -> Picture
 renderBullet b = 
@@ -43,8 +42,7 @@ renderBullet b =
     color red $ 
     circleSolid (bulletSize b)
 
---down here are functions that dont do anything yet
---so can be changed easily without breaking the game
+--maybe change this orange circle to a more realistic explosion, but for now it works
 renderExplosion :: Explosion -> Picture
 renderExplosion e = 
     uncurry translate (explosionPosition e) $
@@ -67,8 +65,8 @@ renderPaused = pictures
 renderGameOver :: Int -> Picture
 renderGameOver finalScore = pictures
     [ translate (-150) 50 $ scale 0.4 0.4 $ color red $ text "GAME OVER"
-    , translate (-180) (-20) $ scale 0.2 0.2 $ color white $ text ("Final Score: " ++ show finalScore)
-    , translate (-220) (-70) $ scale 0.15 0.15 $ color white $ text "Press 'R' to restart"
+    , translate (-150) (-20) $ scale 0.2 0.2 $ color white $ text ("Final Score: " ++ show finalScore)
+    , translate (-150) (-70) $ scale 0.15 0.15 $ color white $ text "Press 'r' to restart"
     ]
 
 

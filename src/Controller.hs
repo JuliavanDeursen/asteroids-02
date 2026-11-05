@@ -97,6 +97,13 @@ updateExplosions dt explosions =
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
+
+--Restart the game when the user presses 'r'
+input (EventKey (Char 'r') Down _ _) gstate = do
+    gen <- newStdGen
+    let startAstroids = makeRandomAsteroids 5 gen
+    return (initialState startAstroids)
+
 input e gstate = return (inputKey e gstate)
 
 inputKey :: Event -> GameState -> GameState
@@ -195,6 +202,21 @@ bulletHits bullets asteroids =
 
     in (remainingAsteroids, remainingBullets, newExplosions, scoreGain)
 
---this functions makes the asteroids
---makeAsteroids :: GameState -> IO GameState
---makeAsteroids gamestate = 
+--random asteroid generater
+makeRandomAsteroid :: StdGen -> (Asteroid, StdGen)
+makeRandomAsteroid gen =
+    let (x, gen1) = randomR (-400, 400) gen
+        (y, gen2) = randomR (-300, 300) gen1
+        (vx, gen3) = randomR (-50, 50) gen2
+        (vy, gen4) = randomR (-50, 50) gen3
+        (size, gen5) = randomR (20, 50) gen4
+        asteroiD = Asteroid { asteroidPosition = (x, y)
+                     , asteroidVelocity = (vx, vy)
+                     , asteroidSize = size }
+    in (asteroiD, gen5)
+
+makeRandomAsteroids :: Int -> StdGen -> [Asteroid]
+makeRandomAsteroids 0 _ = []
+makeRandomAsteroids n gen =
+    let (asteroiD, gen') = makeRandomAsteroid gen
+    in asteroiD : makeRandomAsteroids (n - 1) gen'
