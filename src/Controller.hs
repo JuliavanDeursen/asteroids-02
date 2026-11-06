@@ -89,7 +89,7 @@ updatePlayer dt keys p =
 
         -- Acceleration when holding the up arrow
         angleRad = newAngle * (pi / 180)
-        acceleration = 70
+        acceleration = 100
 
         -- | acceleration in according direction
         (newVx, newVy)

@@ -16,4 +16,5 @@ executable gloss-counter
   other-modules:       Controller
                      , Model
                      , View
+                     , HighScores
   default-language:    Haskell2010
