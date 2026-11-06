@@ -13,7 +13,16 @@ step :: Float -> GameState -> IO GameState
 step dt gamestate
     | paused gamestate   = return gamestate
     | gameOver gamestate = return gamestate
-    | otherwise  = return (updateGame dt gamestate)
+    | otherwise  = do
+        let updateState = updateGame dt gamestate
+        let numberDestroyed = length (asteroids gamestate) - length (asteroids updateState)
+        if numberDestroyed > 0
+            then do
+                gen <- newStdGen
+                let newAsteroids = makeRandomAsteroids numberDestroyed gen
+                return updateState { asteroids = asteroids updateState ++ newAsteroids }
+            else 
+                return updateState
 
 updateGame :: Float -> GameState -> GameState
 updateGame dt gamestate =
@@ -50,7 +59,9 @@ updatePlayer dt p =
 
         wrapX = wrapCoord (-400) 400 newX
         wrapY = wrapCoord (-300) 300 newY
-    in p { playerPosition = (wrapX, wrapY) }
+
+    in p { playerPosition = (wrapX, wrapY), 
+           shotCooldown = max 0 (shotCooldown p - dt) }
 
 --Helpfunction to wrap coordinates around the screen edges
 wrapCoord :: Float -> Float -> Float -> Float
@@ -133,18 +144,21 @@ inputKey (EventKey (SpecialKey KeyUp) Down _ _) gstate =
     in gstate { player = p { playerVelocity = (newVx, newVy) } }
 
 --Spacebar key fires a bullet
-inputKey (EventKey (SpecialKey KeySpace) Down _ _) gstate =
-    let p = player gstate
-        angleRad = playerAngle p * (pi / 180)
-        bulletSpeed = 300
-        (px, py) = playerPosition p
-        bulletVx = bulletSpeed * cos angleRad
-        bulletVy = - (bulletSpeed * sin angleRad)
-        newBullet = Bullet { bulletPosition = playerPosition p
+inputKey (EventKey (SpecialKey KeySpace) Down _ _) gstate
+    | shotCooldown (player gstate) > 0 = gstate --do nothing if the player is still in cooldown
+    | otherwise =
+        let p = player gstate
+            angleRad = playerAngle p * (pi / 180)
+            bulletSpeed = 300
+            (px, py) = playerPosition p
+            bulletVx = bulletSpeed * cos angleRad
+            bulletVy = - (bulletSpeed * sin angleRad)
+            newBullet = Bullet { bulletPosition = playerPosition p
                            , bulletVelocity = (bulletVx, bulletVy)
                            , bulletTime = 0
                            , bulletSize = 3 }
-    in gstate { bullets = newBullet : bullets gstate }
+        in gstate { bullets = newBullet : bullets gstate, 
+                    player = p { shotCooldown = 0.7 } } --set cooldown to 0.7 seconds
 
 inputKey _ gstate = gstate
 
@@ -202,15 +216,23 @@ bulletHits bullets asteroids =
 
     in (remainingAsteroids, remainingBullets, newExplosions, scoreGain)
 
---random asteroid generater
+--random asteroid generater, spawns asteroids outside the screen and moves them inwards
 makeRandomAsteroid :: StdGen -> (Asteroid, StdGen)
 makeRandomAsteroid gen =
-    let (x, gen1) = randomR (-400, 400) gen
-        (y, gen2) = randomR (-300, 300) gen1
+    let (edge, gen1) = randomR (0 :: Int, 3 :: Int) gen
+        (pos, gen2) = case edge of
+            0 -> let (x, g) = randomR (-400, 400) gen1 in ((x, -300), g) --bottom
+            1 -> let (x, g) = randomR (-400, 400) gen1 in ((x, 300), g)  --top
+            2 -> let (y, g) = randomR (-300, 300) gen1 in ((-400, y), g) --left
+            _ -> let (y, g) = randomR (-300, 300) gen1 in ((400, y), g)  --right
+
         (vx, gen3) = randomR (-50, 50) gen2
         (vy, gen4) = randomR (-50, 50) gen3
+
         (size, gen5) = randomR (20, 50) gen4
-        asteroiD = Asteroid { asteroidPosition = (x, y)
+
+
+        asteroiD = Asteroid { asteroidPosition = pos
                      , asteroidVelocity = (vx, vy)
                      , asteroidSize = size }
     in (asteroiD, gen5)

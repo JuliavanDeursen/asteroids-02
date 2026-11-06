@@ -3,6 +3,7 @@
 module Model where
 
 import Graphics.Gloss
+import System.Random
 
 type Velocity = (Float, Float)
 
@@ -22,7 +23,8 @@ data Player = Player
     { playerPosition :: Point, 
       playerVelocity :: Velocity, 
       playerAngle :: Float, 
-      playerSize :: Float 
+      playerSize :: Float,
+      shotCooldown :: Float --makes sure the player can't shoot too fast
     } 
 
 --asteroid data type
@@ -48,16 +50,14 @@ data Explosion = Explosion
 
 initialState :: [Asteroid] -> GameState
 initialState startAsteroids = GameState 
-    { player = Player {playerPosition = (0,0), playerVelocity = (0,0), playerAngle = 0, playerSize = 20}, 
+    { player = Player {playerPosition = (0,0), playerVelocity = (0,0), playerAngle = 0, playerSize = 20, shotCooldown = 0}, 
       asteroids = startAsteroids, 
       bullets = [],   
       explosions = [], 
       score = 0, 
       paused = False,  
-      gameOver = False 
+      gameOver = False
     }
---comments = 
---the spawning of asteroids needs to be outside frame, so that they spawn outside the screen and move inwards
 
 --playingState :: GameState
 --playingState = 
