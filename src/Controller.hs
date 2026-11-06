@@ -332,8 +332,8 @@ makeRandomAsteroid currentScore gen =
         (typeRoll, gen1) = randomR (0 :: Int, 99) gen
 
         chosenType
-            | currentScore >= 0 && typeRoll < 20 = Big --hier
-            | currentScore >= 0 && typeRoll < 55 = Fast
+            | currentScore >= 500 && typeRoll < 20 = Big 
+            | currentScore >= 1000 && typeRoll < 55 = Fast
             | otherwise = Normal
 
         -- Kies een willekeurige schermrand
